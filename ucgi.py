@@ -9,10 +9,10 @@ User-defined package
 Support for URL/CGI v2.1
 Copyright (c) 2018-2021 by Adam, All rights reserved.
 
-This means that no one may use your work unless they obtain your permission.
-This statement is not legally required, and failure to include it has no legal
-significance. Since others may not use copyrighted works without the copyright
-holder's permission, the statement is redundant.
+Function     Desc 
+ulog         write log to URL
+uform        Get Web Form Data
+
 """
 
 import sys
@@ -55,7 +55,7 @@ def ulog(dval):
 
     try:
 
-        # variable INIT
+        # Variable INIT
         int_p    = dval.get('int_p',    dval_default['int_p'])
         ip       = dval.get('ip',       dval_default['ip'])
         path     = dval.get('path',     dval_default['path'])
