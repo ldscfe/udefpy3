@@ -6,13 +6,19 @@
 #
 r"""
 User-defined package
-Support for Database (DBMS) v1.91
-Copyright (c) 2018-2021 by Adam, All rights reserved.
+Support for Database (DBMS) v1.92
+Copyright (c) 2018-2022 by Adam, All rights reserved.
 
-This means that no one may use your work unless they obtain your permission.
-This statement is not legally required, and failure to include it has no legal
-significance. Since others may not use copyrighted works without the copyright
-holder's permission, the statement is redundant.
+conn = db_conn(dict)                              connect to DB using host list
+conn = db_conn_s(dict)                            connect to DB
+dict = ukv(cur_r, k_type, k_id='', key='')        Get KV value
+list = ucoln(cur)                                 Get Column Name
+list = uresl(cur_r, sql, pl=1, CASE='')           Get Result to List
+s_res = dbconnping(d_para)                        Test DB or Run SQL Get Top N
+cols = ifss(db_type, n)                           Insert Field Separator String
+s_sql = exec_sql(s_sql_code, d_para, rs=None, commit=True)
+d_res = csql(d_para)                              Create Table
+
 """
 
 import os
@@ -40,17 +46,8 @@ import usql_sys
  1.5        2020/11/18  Adam             Add ifss
  1.6        2021/01/06  Adam             Add exec_sql
  1.90       2022/8/17   Adam             db_conn --> db_conn_s, Add db_conn(connect to DB using host list)
+ 1.92       2022/12/22  Adam             Add Oracle DSN connect using oracledb
 
-
-conn = db_conn(dict)                              connect to DB using host list
-conn = db_conn_s(dict)                            connect to DB
-dict = ukv(cur_r, k_type, k_id='', key='')        Get KV value
-list = ucoln(cur)                                 Get Column Name
-list = uresl(cur_r, sql, pl=1, CASE='')           Get Result to List
-s_res = dbconnping(d_para)                        Test DB or Run SQL Get Top N
-cols = ifss(db_type, n)                           Insert Field Separator String
-s_sql = exec_sql(s_sql_code, d_para, rs=None, commit=True)
-d_res = csql(d_para)                              Create Table
 -----------------------------------------------------------------------------
 '''
 
@@ -126,6 +123,8 @@ def db_conn(db, PRE=0):
  1.81       2020/09/12  Adam             MODI PRE : passwd salt, default PRE=0
  1.82       2021/08/23  Adam             Fix : host like 'tcp://...'
  1.90       2022/08/17  Adam             db_conn --> db_conn_s
+ 1.92       2022/12/22  Adam             Add Oracle DSN connect using oracledb
+
 
 db {type,host,user,passwd,db,[port]}
 -----------------------------------------------------------------------------'''
@@ -149,9 +148,14 @@ def db_conn_s(db, PRE=0):
 
         # Oracle
         if db_type == "oracle":
-            import cx_Oracle as oc
-            s_port = db.get('port', 1521)
-            _conn = oc.connect(s_user + '/' + s_passwd + '@' + s_host + ':' + s_port + '/' + s_db)
+            s_dsn   = db.get('dsn', '')
+            if s_dsn:
+                import oracledb
+                _conn = oracledb.connect(user=s_user, password=s_passwd, dsn=s_dsn)
+            else:
+               import cx_Oracle as oc
+               s_port = db.get('port', 1521)
+               _conn = oc.connect(s_user + '/' + s_passwd + '@' + s_host + ':' + s_port + '/' + s_db)
 
         # postgreSQL & greenplum
         elif db_type in ["postgresql", "greenplum"]:
